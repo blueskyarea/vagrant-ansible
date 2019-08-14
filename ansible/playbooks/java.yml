@@ -1,0 +1,18 @@
+- hosts: my-local-dev
+  connection: local
+  sudo: yes
+  user: vagrant
+  tasks:
+    - name: Set stat of installed java
+      stat: path=/usr/lib/jvm/java-8-openjdk-amd64
+      register: installed_java
+
+    - name: Install add-apt-repostory
+      apt: name=software-properties-common state=latest
+      when: (not installed_java.stat.exists)
+
+    - name: Install Oracle Java 8
+      apt: name={{item}} state=latest
+      with_items:
+        - openjdk-8-jdk
+      when: (not installed_java.stat.exists)

@@ -1,0 +1,12 @@
+- hosts: my-local-dev
+  connection: local
+  sudo: yes
+  user: vagrant
+  tasks:
+    - name: Set stat of installed git
+      stat: path=/usr/bin/git
+      register: installed_git
+
+    - name: Install git
+      apt: name=git update_cache=yes cache_valid_time=3600
+      when: (not installed_git.stat.exists)

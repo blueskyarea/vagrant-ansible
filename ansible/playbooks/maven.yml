@@ -1,0 +1,33 @@
+- hosts: my-local-dev
+  connection: local
+  sudo: yes
+  user: vagrant
+  vars_files:
+    - ../user_vars/ver-list.yml
+
+  tasks:
+    - name: Set stat of maven custom PATH
+      stat: path=/opt/apache-maven-{{ mvn_ver }}
+      register: installed_maven
+
+    - name: debug for Set stat of maven custom PATH
+      debug:
+        msg: "{{ installed_maven }}"
+
+    - name: Set stat of installed maven
+      stat: path=/etc/profile.d/maven-custom-path.sh
+      register: installed_maven_path
+
+    - name: Download Apache Maven 
+      get_url: url=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/{{ mvn_ver }}/apache-maven-{{ mvn_ver }}-bin.tar.gz dest=/tmp/apache-maven-{{ mvn_ver }}-bin.tar.gz
+      when: (not installed_maven.stat.exists)
+
+    - name: Untar Maven 
+      shell: chdir=/tmp creates=/opt/apache-maven-{{ mvn_ver }} tar -zxf apache-maven-{{ mvn_ver }}-bin.tar.gz -C /opt
+      when: (not installed_maven.stat.exists)
+
+    - name: Add another bin dir to system-wide $PATH.
+      copy:
+        dest: /etc/profile.d/maven-custom-path.sh
+        content: 'PATH=$PATH:/opt/apache-maven-{{ mvn_ver }}/bin'
+      when: (not installed_maven_path.stat.exists)

@@ -1,0 +1,20 @@
+- hosts: my-local-dev
+  connection: local
+  sudo: yes
+  user: vagrant
+  tasks:
+    - name: Set stat of installed docker
+      stat: path=/usr/bin/docker
+      register: installed_docker
+
+    - name: Set stat of installed docker-compose
+      stat: path=/usr/bin/docker-compose
+      register: installed_compose
+
+    - name: Install docker
+      apt: name=docker update_cache=yes cache_valid_time=3600
+      when: (not installed_docker.stat.exists)
+
+    - name: Install docker-compose
+      apt: name=docker-compose update_cache=yes cache_valid_time=3600
+      when: (not installed_compose.stat.exists)

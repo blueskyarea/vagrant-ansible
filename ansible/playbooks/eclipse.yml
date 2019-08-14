@@ -1,0 +1,37 @@
+- hosts: my-local-dev
+  connection: local
+  sudo: yes
+  user: vagrant
+  tasks:
+    - name: Set stat of downloaded eclipse
+      stat: path=/opt/eclipse/oxygen-3a
+      register: downloaded_eclipse
+
+    - name: Set stat of installed eclipse
+      stat: path=/opt/eclipse/current/eclipse
+      register: installed_eclipse
+
+    - name: Download eclipse
+      get_url: url=http://ftp.jaist.ac.jp/pub/eclipse/technology/epp/downloads/release/oxygen/3a/eclipse-jee-oxygen-3a-linux-gtk-x86_64.tar.gz dest=/tmp/eclipse-inst-linux64.tar.gz
+      when: (not installed_eclipse.stat.exists)
+
+    - name: Create directory
+      file: path=/opt/eclipse state=directory
+      when: (not installed_eclipse.stat.exists)
+
+    - name: Unarchive
+      unarchive: src=/tmp/eclipse-inst-linux64.tar.gz dest=/tmp
+      when: (not installed_eclipse.stat.exists)
+
+    - name: Copy
+      command: cp -r /tmp/eclipse /opt/eclipse/oxygen-3a
+      when: (not installed_eclipse.stat.exists)
+
+    - name: Create symlink
+      alternatives: name=eclipse link=/opt/eclipse/current path=/opt/eclipse/oxygen-3a
+      when: (not installed_eclipse.stat.exists)
+
+    - name: Add another bin dir to system-wide $PATH.
+      copy:
+        dest: /etc/profile.d/eclipse-custom-path.sh
+        content: 'PATH=$PATH:/opt/eclipse/oxygen-3a'

@@ -1,0 +1,75 @@
+- hosts: my-local-dev
+  connection: local
+  sudo: yes
+  user: vagrant
+  vars_files:
+    - ../user_vars/user-list.yml
+
+  tasks:
+    - name: Install packages lubuntu-desktop
+      apt: name=lubuntu-desktop update_cache=yes cache_valid_time=3600
+      register: result
+
+    - name: debug for Install packages lubuntu-desktop
+      debug:
+        msg: "{{ result }}"
+
+    - name: Add an Apt signing key, uses whichever key is at the URL
+      apt_key:
+        url: https://packagecloud.io/AtomEditor/atom/gpgkey
+        state: present
+
+    - name: Add apt-repogitory for atom
+      apt_repository:
+        repo: "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main"
+        update_cache: yes
+
+    - name: Install common packages
+      apt: pkg={{ item }} state=present update_cache=yes cache_valid_time=3600
+      with_items:
+        - terminator
+        - tree
+        - atom
+        - shellcheck
+        - byzanz
+
+    - name: Install virtualbox packages
+      apt: pkg={{ item }} update_cache=yes cache_valid_time=3600
+      with_items:
+        - virtualbox-guest-dkms
+        - virtualbox-guest-utils
+        - virtualbox-guest-x11
+
+    - name: Create user
+      user:
+        name: "{{ item.name }}"
+        password: "{{ item.password }}"
+        groups:  "{{ item.group }}"
+        shell: /bin/bash
+      with_items:
+        - "{{ users }}"
+      when: users
+
+    - name: Copy file for auto login
+      copy:
+        src: ../module_utils/01_autologin.conf
+        dest: /etc/lightdm/lightdm.conf.d
+        mode: 0644
+
+    - name: add sudo permission to user
+      lineinfile:
+        dest: /etc/sudoers
+        backup: yes
+        line: '"{{ item.name }}" ALL=(ALL) NOPASSWD: ALL'
+      with_items:
+        - "{{ users }}"
+
+    - name: Disable screen lock
+      copy:
+        dest: /etc/profile.d/disable-screen-lock.sh
+        content: 'gsettings set org.gnome.desktop.lockdown disable-lock-screen true'
+        register: result_lock
+
+    - name: debug for Disable screen lock
+      debug:
+        msg: "{{ result_lock }}"

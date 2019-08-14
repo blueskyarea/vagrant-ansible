@@ -1,0 +1,6 @@
+- include: playbooks/environment.yml
+- include: playbooks/git.yml
+- include: playbooks/java.yml
+- include: playbooks/maven.yml
+- include: playbooks/eclipse.yml
+- include: playbooks/docker.yml
