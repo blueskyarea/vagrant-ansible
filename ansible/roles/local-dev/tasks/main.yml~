@@ -1,6 +1,0 @@
-- hosts:local-dev
-  tasks:
-    - include: environment.yml
-    - include: git.yml
-    - include: java.yml
-    - include: maven.yml

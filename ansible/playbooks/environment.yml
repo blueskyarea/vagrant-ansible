@@ -69,7 +69,3 @@
         dest: /etc/profile.d/disable-screen-lock.sh
         content: 'gsettings set org.gnome.desktop.lockdown disable-lock-screen true'
         register: result_lock
-
-    - name: debug for Disable screen lock
-      debug:
-        msg: "{{ result_lock }}"
