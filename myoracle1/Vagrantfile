@@ -1,0 +1,39 @@
+#Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
+# Vagrantfile
+# coding: utf-8
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  # myoracle1 vm
+  config.vm.box = "bento/centos-7.8"
+  config.vm.hostname = 'myoracle1'
+  config.vm.network :private_network,ip: "192.168.60.50"
+  config.vm.provider "virtualbox" do |vbox|
+    vbox.gui = false
+    vbox.name = "CentOs7.8-myoracle1"
+    vbox.cpus = 2
+    vbox.memory = 2048
+    vbox.customize [
+      "modifyvm", :id,
+      "--vram", "256", # video memory for full screen
+      "--clipboard", "bidirectional", # sharing clipboard
+      "--draganddrop", "bidirectional", # enable drag & drop
+      "--cpus", "2", # 2 cpu
+      "--ioapic", "on" # enable I/O APIC
+    ]
+  end
+  # For /sbin/mount.vboxsf: mounting failed with the error: No such device
+  config.vbguest.auto_update = false
+
+  # ansible
+  config.vm.synced_folder "./ansible", "/ansible"
+  config.vm.provision "ansible_local" do |ansible|
+    ansible.playbook       = "/ansible/myoracle1.yml"
+    ansible.version        = "latest"
+    ansible.verbose        = false
+    ansible.limit          = "myora1"
+    ansible.inventory_path = "/ansible/hosts"
+  end
+end
+

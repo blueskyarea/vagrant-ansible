@@ -1,0 +1,17 @@
+- hosts: myoracle1
+  connection: local
+  become: yes
+  gather_facts: true
+
+  tasks:
+
+  ## Install Oracle Preinstallation RPM
+  - name: Download Oracle rpm package
+    get_url:
+      url: https://yum.oracle.com/repo/OracleLinux/OL7/latest/x86_64/getPackage/oracle-database-preinstall-19c-1.0-1.el7.x86_64.rpm
+      dest: /tmp
+
+  - name: Install Oracle Preinstallation
+    yum:
+      name: /tmp/oracle-database-preinstall-19c-1.0-1.el7.x86_64.rpm
+      state: present
